@@ -38,7 +38,7 @@ class CSVApp:
 
     def load_csv_data(self):
         self.data = []
-        with open("kontaktlistexxl.csv", newline='', encoding='latin1') as csvfile:  # Specify encoding if needed
+        with open("test-csv.csv", newline='', encoding='latin1') as csvfile:  # Specify encoding if needed
             csv_reader = csv.reader(csvfile, delimiter=',')  # Use semicolon as the delimiter
             for row in csv_reader:
                 self.data.append(row)
