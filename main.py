@@ -61,20 +61,19 @@ class CSVApp:
     def display_row(self, row_data):
         if len(self.displayed_rows) >= 10:  # Limit to 10 displayed rows
             return
-        row_widgets = []
         for i, value in enumerate(row_data):
-            items = value.split(',')  # Split the value by commas
+            items = value.split(';')  # Split the value by commas
             for j, item in enumerate(items):
-                label = ttk.Label(self.main_frame, text=item)
-                label.grid(row=len(self.displayed_rows) + j, column=i, sticky="w")
-                row_widgets.append(label)
-        self.displayed_rows.append(row_widgets)
+                entry = ttk.Entry(self.main_frame)
+                entry.insert(0, item)
+                entry.grid(row=len(self.displayed_rows), column=j, sticky="we")
+
 
     def on_frame_configure(self, event=None):
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
     def on_canvas_configure(self, event=None):
-        canvas_width = min(600, event.width)
+        canvas_width = min(400, event.width)
         self.canvas.config(width=canvas_width)
 
 if __name__ == "__main__":
