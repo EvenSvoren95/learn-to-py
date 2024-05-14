@@ -39,7 +39,7 @@ class CSVApp:
     def load_csv_data(self):
         self.data = []
         with open("test-csv.csv", newline='', encoding='latin1') as csvfile:  # Specify encoding if needed
-            csv_reader = csv.reader(csvfile, delimiter=',')  # Use semicolon as the delimiter
+            csv_reader = csv.reader(csvfile, delimiter=';')  # Use semicolon as the delimiter
             for row in csv_reader:
                 self.data.append(row)
 
@@ -58,15 +58,27 @@ class CSVApp:
                 widget.destroy()
         self.displayed_rows.clear()
 
-    def display_row(self, row_data):
+    def display_row(self, row_data, headers=None):
         if len(self.displayed_rows) >= 10:  # Limit to 10 displayed rows
             return
+        num_columns = min(len(row_data), 400 // 100)  # Calculate the number of columns based on the canvas width
+        row = len(self.displayed_rows)  # Increment the row for each row of data
         for i, value in enumerate(row_data):
             items = value.split(';')  # Split the value by commas
             for j, item in enumerate(items):
+                column = j % num_columns  # Calculate the column index, wrapping around if needed
+                
+                # Add text label
+                if headers and j < len(headers):
+                    label = ttk.Label(self.main_frame, text=headers[j])
+                    label.grid(row=row, column=column*2, sticky="e")  # Place label in even-numbered columns
+                
+                # Add input field
                 entry = ttk.Entry(self.main_frame)
                 entry.insert(0, item)
-                entry.grid(row=len(self.displayed_rows), column=j, sticky="we")
+                entry.grid(row=row, column=column*2+1, sticky="we")  # Place input field in odd-numbered columns
+            row += 1  # Move to the next row for the next set of data
+
 
 
     def on_frame_configure(self, event=None):
@@ -80,3 +92,5 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = CSVApp(root)
     root.mainloop()
+
+    
