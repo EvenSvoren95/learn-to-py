@@ -4,6 +4,7 @@ import csv
 
 class CSVApp:
     def __init__(self, root):
+        super().__init__()
         self.root = root
         self.root.title("CSV old App")
         #test
@@ -40,8 +41,15 @@ class CSVApp:
         self.data = []
         with open("test-csv.csv", newline='', encoding='latin1') as csvfile:  # Specify encoding if needed
             csv_reader = csv.reader(csvfile, delimiter=';')  # Use semicolon as the delimiter
+            headers = next(csv_reader)  # Read the first row as headers
+            self.data.append(headers)  # Add headers to the data
             for row in csv_reader:
                 self.data.append(row)
+
+    def display_csv_data(self):
+        headers = self.data[0]  # Get the headers from the data
+        for row_data in self.data[1:]:  # Skip the first row (headers)
+            self.display_row(row_data, headers=headers)
 
     def search(self, event=None):
         query = self.search_var.get().lower()
@@ -61,7 +69,7 @@ class CSVApp:
     def display_row(self, row_data, headers=None):
         if len(self.displayed_rows) >= 10:  # Limit to 10 displayed rows
             return
-        num_columns = min(len(row_data), 400 // 100)  # Calculate the number of columns based on the canvas width
+        num_columns = min(len(row_data), 200 // 100)  # Calculate the number of columns based on the canvas width
         row = len(self.displayed_rows)  # Increment the row for each row of data
         for i, value in enumerate(row_data):
             items = value.split(';')  # Split the value by commas
@@ -85,12 +93,15 @@ class CSVApp:
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
     def on_canvas_configure(self, event=None):
-        canvas_width = min(400, event.width)
+        canvas_width = min(300, event.width)
+        canvas_height = min(150, event.height)
         self.canvas.config(width=canvas_width)
+        self.canvas.config(height=canvas_height)
 
 if __name__ == "__main__":
     root = tk.Tk()
     app = CSVApp(root)
+    app.display_csv_data()
     root.mainloop()
 
     
