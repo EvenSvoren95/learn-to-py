@@ -6,8 +6,10 @@ class CSVApp:
     def __init__(self, root):
         super().__init__()
         self.root = root
-        self.root.title("CSV old App")
-        #test
+        self.root.title("The big search engine")
+
+        # Displayed Rows
+        self.displayed_rows = []
 
         # Create Canvas with Scrollbar
         self.canvas = tk.Canvas(self.root)
@@ -27,65 +29,79 @@ class CSVApp:
         self.search_entry.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
         self.search_entry.bind("<Return>", self.search)
 
-        # Load CSV Data
-        self.load_csv_data()
-
-        # Displayed Rows
-        self.displayed_rows = []
+        # Load and display CSV data
+        self.load_and_display_csv_data()
 
         # Configure Canvas Scrolling
         self.main_frame.bind("<Configure>", self.on_frame_configure)
         self.canvas.bind("<Configure>", self.on_canvas_configure)
 
-    def load_csv_data(self):
+    def load_and_display_csv_data(self):
+        # Load CSV data
         self.data = []
         with open("test-csv.csv", newline='', encoding='latin1') as csvfile:  # Specify encoding if needed
             csv_reader = csv.reader(csvfile, delimiter=';')  # Use semicolon as the delimiter
-            headers = next(csv_reader)  # Read the first row as headers
-            self.data.append(headers)  # Add headers to the data
+            self.column_titles = next(csv_reader)  # Read the first row containing the column titles
             for row in csv_reader:
                 self.data.append(row)
 
+        # Display CSV data
+        self.display_first_row()
+
     def display_csv_data(self):
-        headers = self.data[0]  # Get the headers from the data
-        for row_data in self.data[1:]:  # Skip the first row (headers)
-            self.display_row(row_data, headers=headers)
+        for row_data in self.data:
+            self.display_row(self.column_titles, row_data)
 
     def search(self, event=None):
-        query = self.search_entry.get().lower()  # Get the search query from the entry field
+        query = self.search_entry.get().lower()
         self.clear_displayed_rows()
         for row in self.data:
             for value in row:
                 if query in value.lower():
-                    self.display_row(row)
+                    self.display_row(self.column_titles, row)  # Pass column titles and row data to display_row
                     break
 
-    def clear_displayed_rows(self):
-        for row_widgets in self.displayed_rows:
-            for widget in row_widgets:
-                widget.destroy()
-        self.displayed_rows.clear()
 
-    def display_row(self, row_data, headers=None):
+    def clear_displayed_rows(self):
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
+        self.displayed_rows = []
+
+    def display_first_row(self):
+        if not self.column_titles:  # If column titles are not loaded yet
+            return
+
+        if len(self.column_titles) < 5:  # If there are fewer than 5 column titles
+            print("CSV file does not have enough columns for 5 fields")
+            return
+
+        for i in range(5):  # Create 5 input fields
+            label = ttk.Label(self.main_frame, text=self.column_titles[i], relief="ridge", borderwidth=2)
+            label.grid(row=i, column=0, sticky="we")
+
+            entry = ttk.Entry(self.main_frame, width=25)
+            entry.insert(tk.END, self.data[0][i])  # Fill entry with value from first row of CSV
+            entry.grid(row=i, column=1, sticky="we")
+
+    def display_row(self, titles, row_data):
         if len(self.displayed_rows) >= 10:  # Limit to 10 displayed rows
             return
-        num_columns = min(len(row_data), 200 // 100)  # Calculate the number of columns based on the canvas width
         row = len(self.displayed_rows)  # Increment the row for each row of data
+
+        # Add title labels
+        for i, title in enumerate(titles):
+            label = ttk.Label(self.main_frame, text=title, relief="ridge", borderwidth=2)
+            label.grid(row=i, column=0, sticky="we")
+
+        # Display row data
         for i, value in enumerate(row_data):
-            items = value.split(';')  # Split the value by commas
-            for j, item in enumerate(items):
-                column = j % num_columns  # Calculate the column index, wrapping around if needed
-                
-                # Add text label
-                if headers and j < len(headers):
-                    label = ttk.Label(self.main_frame, text=headers[j])
-                    label.grid(row=row, column=column*2, sticky="e")  # Place label in even-numbered columns
-                
-                # Add input field
-                entry = ttk.Entry(self.main_frame)
-                entry.insert(0, item)
-                entry.grid(row=row, column=column*2+1, sticky="we")  # Place input field in odd-numbered columns
-            row += 1  # Move to the next row for the next set of data
+            entry = ttk.Entry(self.main_frame, width=25)
+            label = ttk.Label(self.main_frame, text=value, relief="ridge", borderwidth=2)
+            entry.insert(tk.END, value)
+            entry.grid(row=i, column=1, sticky="we")  # Adjust column index to start from 1
+
+        self.displayed_rows.append(row)  # Track the displayed row
+
 
 
 
@@ -101,7 +117,6 @@ class CSVApp:
 if __name__ == "__main__":
     root = tk.Tk()
     app = CSVApp(root)
-    app.display_csv_data()
     root.mainloop()
 
     
