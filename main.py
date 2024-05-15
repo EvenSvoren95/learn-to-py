@@ -25,7 +25,7 @@ class CSVApp:
         self.search_var = tk.StringVar()
         self.search_entry = ttk.Entry(self.root, textvariable=self.search_var)
         self.search_entry.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
-        self.search_entry.bind("<KeyRelease>", self.search)
+        self.search_entry.bind("<Return>", self.search)
 
         # Load CSV Data
         self.load_csv_data()
@@ -52,7 +52,7 @@ class CSVApp:
             self.display_row(row_data, headers=headers)
 
     def search(self, event=None):
-        query = self.search_var.get().lower()
+        query = self.search_entry.get().lower()  # Get the search query from the entry field
         self.clear_displayed_rows()
         for row in self.data:
             for value in row:
