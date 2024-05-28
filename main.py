@@ -46,11 +46,11 @@ class CSVApp:
                 self.data.append(row)
 
         # Display CSV data
-        self.display_first_row()
+        self.display_data()
 
     def display_csv_data(self):
         for row_data in self.data:
-            self.display_row(self.column_titles, row_data)
+            self.display_data(self.column_titles, row_data)
 
     def search(self, event=None):
         query = self.search_entry.get().lower()
@@ -58,50 +58,47 @@ class CSVApp:
         for row in self.data:
             for value in row:
                 if query in value.lower():
-                    self.display_row(self.column_titles, row)  # Pass column titles and row data to display_row
+                    self.display_data(self.column_titles, row)  # Pass column titles and row data to display_row
                     break
 
 
     def clear_displayed_rows(self):
         for widget in self.main_frame.winfo_children():
-            widget.destroy()
+            # Get the grid information of the widget
+            grid_info = widget.grid_info()
+
+            # Only destroy the widget if it is not in the first column (column 0)
+            if grid_info['column'] != 0:
+                widget.destroy()
+        
+        # Clear the displayed_rows list
         self.displayed_rows = []
 
-    def display_first_row(self):
-        if not self.column_titles:  # If column titles are not loaded yet
-            return
+    def display_data(self, titles=None, row_data=None):
+        if titles is not None and row_data is not None:
+            # Display row data
+            for i, value in enumerate(row_data):
+                entry = ttk.Entry(self.main_frame, width=25)
+                entry.insert(tk.END, value)
+                entry.grid(row=i, column=1, sticky="we")
 
-        if len(self.column_titles) < 5:  # If there are fewer than 5 column titles
-            print("CSV file does not have enough columns for 5 fields")
-            return
+            self.displayed_rows.append(len(self.displayed_rows))  # Track the displayed row
+        else:
+            if not self.column_titles:  # If column titles are not loaded yet
+                return
 
-        for i in range(5):  # Create 5 input fields
-            label = ttk.Label(self.main_frame, text=self.column_titles[i], relief="ridge", borderwidth=2)
-            label.grid(row=i, column=0, sticky="we")
+            if len(self.column_titles) < 1:  # If there are fewer than 5 column titles
+                print("CSV file does not have enough columns for 5 fields")
+                return
 
-            entry = ttk.Entry(self.main_frame, width=25)
-            entry.insert(tk.END, self.data[0][i])  # Fill entry with value from first row of CSV
-            entry.grid(row=i, column=1, sticky="we")
+            # Create input fields for the first row
+            for i, title in enumerate(self.column_titles[:10]):
+                label = ttk.Label(self.main_frame, text=title, relief="ridge", borderwidth=2)
+                label.grid(row=i, column=0, sticky="we")
 
-    def display_row(self, titles, row_data):
-        if len(self.displayed_rows) >= 10:  # Limit to 10 displayed rows
-            return
-        row = len(self.displayed_rows)  # Increment the row for each row of data
-
-        # Add title labels
-        for i, title in enumerate(titles):
-            label = ttk.Label(self.main_frame, text=title, relief="ridge", borderwidth=2)
-            label.grid(row=i, column=0, sticky="we")
-
-        # Display row data
-        for i, value in enumerate(row_data):
-            entry = ttk.Entry(self.main_frame, width=25)
-            label = ttk.Label(self.main_frame, text=value, relief="ridge", borderwidth=2)
-            entry.insert(tk.END, value)
-            entry.grid(row=i, column=1, sticky="we")  # Adjust column index to start from 1
-
-        self.displayed_rows.append(row)  # Track the displayed row
-
+                entry = ttk.Entry(self.main_frame, width=25)
+                entry.insert(tk.END, self.data[0][i])  # Fill entry with value from first row of CSV
+                entry.grid(row=i, column=1, sticky="we")
 
 
 
@@ -110,7 +107,7 @@ class CSVApp:
 
     def on_canvas_configure(self, event=None):
         canvas_width = min(300, event.width)
-        canvas_height = min(150, event.height)
+        canvas_height = min(200, event.height)
         self.canvas.config(width=canvas_width)
         self.canvas.config(height=canvas_height)
 
